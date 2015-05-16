@@ -100,7 +100,7 @@ app.controller("MapCtrl", function($scope, $interval){
     });
 });
 
-var doMarking = function() {
+window.doMarking = function() {
     console.log("マーキングしました!");
 };
 
