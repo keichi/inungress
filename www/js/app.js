@@ -27,10 +27,10 @@ app.controller("MapCtrl", function($scope, $interval){
                     ]
                 }
             ];
-
-            var map = new google.maps.Map(document.getElementById("map-canvas"), options);
+            
+            var map = new google.maps.Map(document.getElementById("map-canvas"), options); 
             var styledMap = new google.maps.StyledMapType(styles, {name: "Styled Map"});
-
+            
             $scope.map = map;
             $scope.map.mapTypes.set("map-style", styledMap);
             $scope.map.setMapTypeId("map-style");
@@ -40,52 +40,89 @@ app.controller("MapCtrl", function($scope, $interval){
                 map: map,
                 draggable: false
             });
-
+            
             google.maps.event.addListener(map, 'center_changed', function(){
                 var pos = map.getCenter();
                 markerCenter.setPosition(pos);
             });
-
-            var myCoordinates1 = [
-                new google.maps.LatLng(34.650791,135.495737),
-                new google.maps.LatLng(34.649732,135.499921),
-                new google.maps.LatLng(34.646095,135.498955),
-                new google.maps.LatLng(34.645107,135.497561),
-                new google.maps.LatLng(34.645177,135.495179),
-                new google.maps.LatLng(34.650791,135.495737)
-            ];
-
+            
+            var myRegion = user.get("region").map(function(geoPoint) {
+               return new google.maps.LatLng(geoPoint.latitude, geoPoint.longitude);
+            });
+                        
             var polyOptions1 = {
-                path: myCoordinates1,
+                path: myRegion,
                 strokeColor: "#00cc33",
                 strokeOpacity: 1,
                 strokeWeight: 3,
                 fillColor: '#00cc33',
                 fillOpacity: 0.35
             }
-
-            var myCoordinates2 = [
-                new google.maps.LatLng(34.651550,135.503054),
-                new google.maps.LatLng(34.650526,135.500200),
-                new google.maps.LatLng(34.649326,135.498998),
-                new google.maps.LatLng(34.647278,135.500758),
-                new google.maps.LatLng(34.646837,135.502968),
-                new google.maps.LatLng(34.651550,135.503054),
-            ];
-            var polyOptions2 = {
-                path: myCoordinates2,
-                strokeColor: "#0099ff",
-                strokeOpacity: 1,
-                strokeWeight: 3,
-                fillColor: '#0099ff',
-                fillOpacity: 0.35
-            }
-
-            var it = new google.maps.Polygon(polyOptions1);
-            it.setMap($scope.map);
-
-            var it = new google.maps.Polygon(polyOptions2);
-            it.setMap($scope.map);
+            
+            var myRegionPolygon = new google.maps.Polygon(polyOptions1);
+            myRegionPolygon.setMap($scope.map);
+            
+            window.doMarking = function() {
+                var rad = function(x) {
+                    return x * Math.PI / 180;
+                };
+                
+                var getDistance = function(p1, p2) {
+                    var R = 6378137; // Earth’s mean radius in meter
+                    var dLat = rad(p2.lat() - p1.lat());
+                    var dLong = rad(p2.lng() - p1.lng());
+                    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(rad(p1.lat())) * Math.cos(rad(p2.lat())) *
+                    Math.sin(dLong / 2) * Math.sin(dLong / 2);
+                    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    var d = R * c;
+                    return d; // returns the distance in meter
+                };
+                
+                var currentCenter = map.getCenter();
+                var minDistance = Number.MAX_VALUE;
+                var minIndex = 0;
+                
+                for (var i = 0; i < myRegion.length; i++) {
+                    var d = getDistance(currentCenter, myRegion[i])
+                    
+                    if (d < minDistance) {
+                        minDistance = d;
+                        minIndex = i;
+                    }
+                }
+                
+                myRegion[minIndex] = currentCenter;
+                
+                myRegionPolygon.setMap(null);
+                myRegionPolygon = new google.maps.Polygon(polyOptions1);
+                myRegionPolygon.setMap($scope.map);
+            };
+            
+            var query2 = new Parse.Query(User);
+            query2.equalTo("username", "user2");
+            query2.first({
+                success: function(user) {
+                    var friendRegion = user.get("region").map(function(geoPoint) {
+                       return new google.maps.LatLng(geoPoint.latitude, geoPoint.longitude);
+                    });
+                    
+                    var polyOptions2 = {
+                        path: friendRegion,
+                        strokeColor: "#0099ff",
+                        strokeOpacity: 1,
+                        strokeWeight: 3,
+                        fillColor: '#0099ff',
+                        fillOpacity: 0.35
+                    }
+                    
+                    var it = new google.maps.Polygon(polyOptions2);
+                    it.setMap($scope.map);
+                },
+                error: function() {
+                    console.log(error)
+                }
+            });
 
             var pollCurrentLocation  = $interval(function() {
                 user.fetch();
@@ -99,8 +136,4 @@ app.controller("MapCtrl", function($scope, $interval){
         }
     });
 });
-
-window.doMarking = function() {
-    window.alert("マーキングしました!");
-};
 
