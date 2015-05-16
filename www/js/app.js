@@ -101,6 +101,6 @@ app.controller("MapCtrl", function($scope, $interval){
 });
 
 window.doMarking = function() {
-    console.log("マーキングしました!");
+    window.alert("マーキングしました!");
 };
 
