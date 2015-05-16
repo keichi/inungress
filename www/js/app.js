@@ -27,10 +27,10 @@ app.controller("MapCtrl", function($scope, $interval){
                     ]
                 }
             ];
-            
-            var map = new google.maps.Map(document.getElementById("map-canvas"), options); 
+
+            var map = new google.maps.Map(document.getElementById("map-canvas"), options);
             var styledMap = new google.maps.StyledMapType(styles, {name: "Styled Map"});
-            
+
             $scope.map = map;
             $scope.map.mapTypes.set("map-style", styledMap);
             $scope.map.setMapTypeId("map-style");
@@ -40,12 +40,12 @@ app.controller("MapCtrl", function($scope, $interval){
                 map: map,
                 draggable: false
             });
-            
+
             google.maps.event.addListener(map, 'center_changed', function(){
                 var pos = map.getCenter();
                 markerCenter.setPosition(pos);
             });
-            
+
             var myCoordinates1 = [
                 new google.maps.LatLng(34.650791,135.495737),
                 new google.maps.LatLng(34.649732,135.499921),
@@ -54,7 +54,7 @@ app.controller("MapCtrl", function($scope, $interval){
                 new google.maps.LatLng(34.645177,135.495179),
                 new google.maps.LatLng(34.650791,135.495737)
             ];
-            
+
             var polyOptions1 = {
                 path: myCoordinates1,
                 strokeColor: "#00cc33",
@@ -63,7 +63,7 @@ app.controller("MapCtrl", function($scope, $interval){
                 fillColor: '#00cc33',
                 fillOpacity: 0.35
             }
-            
+
             var myCoordinates2 = [
                 new google.maps.LatLng(34.651550,135.503054),
                 new google.maps.LatLng(34.650526,135.500200),
@@ -80,13 +80,13 @@ app.controller("MapCtrl", function($scope, $interval){
                 fillColor: '#0099ff',
                 fillOpacity: 0.35
             }
-            
+
             var it = new google.maps.Polygon(polyOptions1);
             it.setMap($scope.map);
-            
+
             var it = new google.maps.Polygon(polyOptions2);
             it.setMap($scope.map);
-            
+
             var pollCurrentLocation  = $interval(function() {
                 user.fetch();
                 var currentLocation = user.get("currentLocation");
@@ -99,3 +99,8 @@ app.controller("MapCtrl", function($scope, $interval){
         }
     });
 });
+
+var doMarking = function() {
+    console.log("マーキングしました!");
+};
+
