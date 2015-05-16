@@ -16,6 +16,8 @@ app.controller("MapCtrl", function($scope, $interval){
                 zoom: 16,
                 center: latlng,
                 mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: false,
+                streetViewControl: false
             };
             var styles = [
                 {
@@ -24,6 +26,20 @@ app.controller("MapCtrl", function($scope, $interval){
                         { "saturation": -16 },
                         { "gamma": 1.18 },
                         { "visibility": "simplified" }
+                    ]
+                },
+                {
+                    "featureType": "administrative",
+                    "elementType": "labels",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },
+                {
+                    "featureType": "poi",
+                    "elementType": "labels",
+                    "stylers": [
+                        { "visibility": "off" }
                     ]
                 }
             ];
@@ -83,8 +99,10 @@ app.controller("MapCtrl", function($scope, $interval){
                 var minDistance = Number.MAX_VALUE;
                 var minIndex = 0;
                 
-                for (var i = 0; i < myRegion.length; i++) {
-                    var d = getDistance(currentCenter, myRegion[i])
+                for (var i = 0; i < myRegion.length - 1; i++) {
+                    var d1 = getDistance(currentCenter, myRegion[i]);
+                    var d2 = getDistance(currentCenter, myRegion[i + 1]);
+                    var d = d1 + d2;
                     
                     if (d < minDistance) {
                         minDistance = d;
@@ -92,7 +110,7 @@ app.controller("MapCtrl", function($scope, $interval){
                     }
                 }
                 
-                myRegion[minIndex] = currentCenter;
+                myRegion.splice(minIndex + 1, 0, currentCenter);
                 
                 myRegionPolygon.setMap(null);
                 myRegionPolygon = new google.maps.Polygon(polyOptions1);
@@ -118,6 +136,10 @@ app.controller("MapCtrl", function($scope, $interval){
                     
                     var it = new google.maps.Polygon(polyOptions2);
                     it.setMap($scope.map);
+                    
+                    google.maps.event.addListener(it, 'click', function (event) {
+                        navi.pushPage('profile.html');
+                    });
                 },
                 error: function() {
                     console.log(error)
