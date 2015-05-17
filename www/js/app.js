@@ -1,6 +1,62 @@
 Parse.initialize("wf8hSrb3nvwMs4Wzmc8eoIQc71YueLTCOGhw3CNa", "bf0N2sbFI5gXulyh1NRh7p9GnBkkOJ2yIx8jgGWM");
 var app = ons.bootstrap("inungress", ["onsen"]);
 
+var calculateCovexHull = function(points) {
+    var clockwise = function(a, b, c) {
+        return (b.lng() - a.lng()) * (c.lat() - a.lat()) - (b.lat() - a.lat()) * (c.lng() - a.lng()) > 0;
+    };
+    var sort = function(a, b) {
+        if(a.lat() > b.lat()) {
+            return -1;
+        } else if (a.lat() < b.lat()) {
+            return 1
+        } else {
+            return 0;
+        }
+    };
+    points.sort(sort);
+    
+    var upPoints = [];
+    upPoints[0] = points[0];
+    upPoints[1] = points[1];
+    
+    for (var i = 2; i < points.length; i++) {
+        upPoints[upPoints.length++] = points[i];
+    
+        // 3点を取り出し、時計回りなら、最初の点と最後の点を結ぶ
+        while (upPoints.length >= 3 && clockwise(upPoints[upPoints.length - 3], upPoints[upPoints.length - 2], upPoints[upPoints.length - 1])) {
+            upPoints[upPoints.length - 2] = upPoints[upPoints.length - 1];
+            upPoints.length--;
+        }
+    }
+    
+    var downPoints = [];
+    downPoints[0] = points[points.length - 1];
+    downPoints[1] = points[points.length - 2];
+
+    for (i = points.length - 3; i >= 0; i--) {
+        downPoints[downPoints.length++] = points[i];
+
+        while (downPoints.length >= 3 && clockwise(downPoints[downPoints.length - 3], downPoints[downPoints.length - 2], downPoints[downPoints.length - 1]))
+        {
+            downPoints[downPoints.length - 2] = downPoints[downPoints.length - 1];
+            downPoints.length--;
+        }
+    }
+
+    // 下から上、上から下へと走査した際に得た凸包ポイントを結合する
+    var result = [];
+    for (i = 0; i < upPoints.length; i++) {
+        result.push(upPoints[i]);
+    }
+
+    for (i = 1; i < downPoints.length - 1; i++) {
+        result.push(downPoints[i]);
+    }
+
+    return result;
+};
+
 app.controller("MapCtrl", function($scope, $interval){
     $scope.map;
 
@@ -73,7 +129,7 @@ app.controller("MapCtrl", function($scope, $interval){
                 strokeWeight: 3,
                 fillColor: '#00cc33',
                 fillOpacity: 0.35
-            }
+            };
             
             var myRegionPolygon = new google.maps.Polygon(polyOptions1);
             myRegionPolygon.setMap($scope.map);
@@ -96,21 +152,34 @@ app.controller("MapCtrl", function($scope, $interval){
                 };
                 
                 var currentCenter = map.getCenter();
-                var minDistance = Number.MAX_VALUE;
-                var minIndex = 0;
+                // var minDistance = Number.MAX_VALUE;
+                // var minIndex = 0;
+                // 
+                // for (var i = 0; i < myRegion.length - 1; i++) {
+                //     var d1 = getDistance(currentCenter, myRegion[i]);
+                //     var d2 = getDistance(currentCenter, myRegion[i + 1]);
+                //     var d = d1 + d2;
+                //     
+                //     if (d < minDistance) {
+                //         minDistance = d;
+                //         minIndex = i;
+                //     }
+                // }
+                // 
+                // myRegion.splice(minIndex + 1, 0, currentCenter);
                 
-                for (var i = 0; i < myRegion.length - 1; i++) {
-                    var d1 = getDistance(currentCenter, myRegion[i]);
-                    var d2 = getDistance(currentCenter, myRegion[i + 1]);
-                    var d = d1 + d2;
-                    
-                    if (d < minDistance) {
-                        minDistance = d;
-                        minIndex = i;
-                    }
+                myRegion.push(currentCenter);
+                myRegion = calculateCovexHull(myRegion);
+                myRegion.shift();
+                
+                polyOptions1 = {
+                    path: myRegion,
+                    strokeColor: "#00cc33",
+                    strokeOpacity: 1,
+                    strokeWeight: 3,
+                    fillColor: '#00cc33',
+                    fillOpacity: 0.35
                 }
-                
-                myRegion.splice(minIndex + 1, 0, currentCenter);
                 
                 myRegionPolygon.setMap(null);
                 myRegionPolygon = new google.maps.Polygon(polyOptions1);
@@ -158,4 +227,3 @@ app.controller("MapCtrl", function($scope, $interval){
         }
     });
 });
-
