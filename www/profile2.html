@@ -1,0 +1,31 @@
+<ons-page>
+    <ons-toolbar>
+        <div class="left"><ons-back-button>Back</ons-back-button></div>
+        <div class="center">プロフィール</div>
+        <div class="right">
+          <ons-toolbar-button><ons-icon icon="ion-gear-a" style="vertical-align: -4px; font-size: 28px;"></ons-icon></ons-toolbar-button>
+        </div>
+    </ons-toolbar>
+    
+    <div class="profile-card">
+        <img src="img/dog2.jpg" class="profile-image-left" />
+        <img src="img/ranking-profile4.jpg" class="profile-image-right" />
+        <div class="profile-name">高橋 美香</div>
+        <div class="profile-id">@mika</div>
+        <div class="profile-desc">社会人でなかなか散歩出来ませんが縄張り争いには負けませんよ！</div>
+    </div>
+    
+    <ons-list modifier="inset" style="margin-top: 10px">
+            <ons-list-item modifier="chevron" ng-click="navi.pushPage('compose.html', {animation: 'lift'});">
+              メッセージを送る
+            </ons-list-item>
+    
+            <ons-list-item modifier="chevron">
+              お気に入りに登録する
+            </ons-list-item>
+    
+            <ons-list-item modifier="chevron">
+              リストに登録する
+            </ons-list-item>
+    </ons-list>
+</ons-page>
