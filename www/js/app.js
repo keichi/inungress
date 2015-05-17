@@ -207,7 +207,7 @@ app.controller("MapCtrl", function($scope, $interval){
                     it.setMap($scope.map);
                     
                     google.maps.event.addListener(it, 'click', function (event) {
-                        navi.pushPage('profile.html');
+                        navi.pushPage('profile2.html');
                     });
                 },
                 error: function() {
